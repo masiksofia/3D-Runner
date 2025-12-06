@@ -6,7 +6,7 @@ public class CameraController : MonoBehaviour
 {
 
     [SerializeField] private Transform player;
-    private Vector3 offset; //змінна вказує на простір між камерую та іграком
+    private Vector3 offset; 
 
 
     void Start()
