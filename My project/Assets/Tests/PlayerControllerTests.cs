@@ -5,39 +5,60 @@ using System.Collections;
 
 public class PlayerControllerTests 
 {
-    // Тест-кейс: Перевірка збільшення швидкості
+    // Test Case: Checking the forward speed increase over time
     [UnityTest]
     public IEnumerator ForwardSpeedIncreasesOverTime()
     {
-        // 1. Аранжування (Setup)
+        // 1. Arrange (Setup)
         GameObject playerObject = new GameObject();
+        
+        // ADD NECESSARY COMPONENTS to the temporary test object:
+        playerObject.AddComponent<CharacterController>(); 
+        playerObject.AddComponent<Animator>(); // Required by the PlayerController script
+
         PlayerController controller = playerObject.AddComponent<PlayerController>();
         
-        // Моделюємо, що гра вже розпочата, інакше Update() повернеться (return)
-        PlayerManager.isGameStarted = true; 
+        //INITIALIZE ALL PUBLIC FIELDS to prevent NullReferenceExceptions 
+        
+        // 1. Initialize Animator reference
+        controller.animator = playerObject.GetComponent<Animator>(); 
+        
+        // 2. Initialize groundCheck (Transform)
+        // Create a dummy object to serve as the ground check position
+        GameObject groundCheckObject = new GameObject("GroundCheck");
+        controller.groundCheck = groundCheckObject.transform;
+        
+        // 3. Initialize groundLayer (LayerMask)
+        // Set to 0  as we are not performing actual physics checks here
+        controller.groundLayer = 0; 
+        
+        // Expect the warning about the Animator missing a Controller, 
+        // which does not affect the core speed logic.
+        UnityEngine.TestTools.LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("Animator is not playing an AnimatorController"));
 
-        // Встановлюємо початкові значення, як у вашому скрипті (forwardSpeed = 0)
-        controller.forwardSpeed = 10f; // Встановлюємо початкову швидкість
+        // Simulate game start to allow the Update method's logic to execute
+        PlayerManager.isGameStarted = true; 
+    
+        // Set initial speed
+        controller.forwardSpeed = 10f; 
         float initialSpeed = controller.forwardSpeed;
 
-        // 2. Дія (Act): Чекаємо кілька кадрів (наприклад, 3 секунди)
-        // Для спрощення тестування, можна змоделювати час.
-        float waitTime = 3.0f; 
-        
-        // В PlayMode, Time.deltaTime - це реальний час між кадрами
-        yield return new WaitForSeconds(waitTime); 
+        // Wait for 3 seconds of game time
+        // This allows the Update() function to increment the speed.
+        yield return new WaitForSeconds(3.0f); 
 
-        // 3. Перевірка (Assert)
+        // Assert (Verification)
         float finalSpeed = controller.forwardSpeed;
+    
+        // Check if speed has increased
+        Assert.Greater(finalSpeed, initialSpeed, "Speed must increase after 3 seconds.");
         
-        // Швидкість має бути більшою за початкову
-        Assert.Greater(finalSpeed, initialSpeed, "Швидкість повинна збільшитися після 3 секунд.");
-        
-        // Швидкість не повинна перевищувати MaxSpeed
-        Assert.LessOrEqual(finalSpeed, controller.MaxSpeed, "Швидкість не повинна перевищувати максимальну швидкість.");
+        // Check if speed respects the MaxSpeed limit
+        Assert.LessOrEqual(finalSpeed, controller.MaxSpeed, "Speed must not exceed the maximum speed.");
 
-        // Очищення
+        // Cleanup
         PlayerManager.isGameStarted = false;
+        Object.Destroy(groundCheckObject);
         Object.Destroy(playerObject);
     }
 }

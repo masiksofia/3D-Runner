@@ -5,27 +5,43 @@ using System.Collections;
 
 public class PlayerManagerTests 
 {
-    // Тест-кейс: Перевірка початкових значень
+    // Test Case: Checking the initial state and coin count upon scene load.
     [UnityTest]
     public IEnumerator InitialGameStateIsCorrect()
     {
-        // 1. Аранжування (Setup): Створення об'єкта, який має PlayerManager.
+        // 1. Arrange (Setup): 
         GameObject managerObject = new GameObject();
-        PlayerManager manager = managerObject.AddComponent<PlayerManager>();
-
-        // Чекаємо один кадр, щоб викликалась функція Start()
-        yield return null; 
-
-        // 2. Дія (Act): Функція Start() вже викликана.
-
-        // 3. Перевірка (Assert): Перевіряємо, чи змінні мають очікувані значення.
-        // Перевіряємо, що гра не почата (очікуємо false)
-        Assert.IsFalse(PlayerManager.isGameStarted, "Гра повинна бути у стані 'Не розпочато' при запуску.");
+    
+        // Create auxiliary UI objects needed by PlayerManager's Update() method
+        GameObject coinTextObject = new GameObject("CoinText");
+        GameObject gameOverPanelObject = new GameObject("GameOverPanel");
+        GameObject startingTextObject = new GameObject("StartingText");
         
-        // Перевіряємо, що монети = 0
-        Assert.AreEqual(0, PlayerManager.numberOfCoins, "Кількість монет має бути 0 при запуску.");
+        // Attach PlayerManager component
+        PlayerManager manager = managerObject.AddComponent<PlayerManager>();
+    
+        // !!! FIX: INITIALIZE ALL PUBLIC UI FIELDS to prevent NullReferenceExceptions in Update()
+        manager.coinsText = coinTextObject.AddComponent<UnityEngine.UI.Text>();
+        manager.gameOverPanel = gameOverPanelObject;
+        manager.startingText = startingTextObject;
 
-        // Очищення сцени
+        // By initializing all fields, we avoid the need for LogAssert.Expect.
+
+        // Wait one frame to ensure the Start() function is called by Unity
+        yield return null; 
+        
+
+        // 3. Assert (Verification): 
+        // Check if game start flag is false
+        Assert.IsFalse(PlayerManager.isGameStarted, "The game state should be 'Not Started' on launch.");
+        
+        // Check if coin count is zero
+        Assert.AreEqual(0, PlayerManager.numberOfCoins, "The number of coins must be 0 on launch.");
+
+        // Cleanup
         Object.Destroy(managerObject);
+        Object.Destroy(coinTextObject);
+        Object.Destroy(gameOverPanelObject);
+        Object.Destroy(startingTextObject);
     }
 }

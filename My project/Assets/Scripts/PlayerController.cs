@@ -1,4 +1,4 @@
-using System.Collections;
+п»їusing System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -34,7 +34,10 @@ public class PlayerController : MonoBehaviour
         if (!PlayerManager.isGameStarted)
             return;
 
-        animator.SetBool("isGameStarted", true);
+        if (animator != null) 
+        {
+            animator.SetBool("isGameStarted", true);
+        }
 
         //increase speed
         if (PlayerManager.gameOver == false)
@@ -119,7 +122,6 @@ public class PlayerController : MonoBehaviour
 
             PlayerManager.gameOver = true;
             //  Destroy(gameObject);
-            // Зупинити час в грі
             Time.timeScale = 0;
             forwardSpeed = MaxSpeed = 0;
             
